@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.34;
 
 import "forge-std/Script.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
@@ -16,6 +16,10 @@ import "../src/OlegTokenV2.sol";
  *   PROXY_ADDRESS        — адрес прокси (обязательно)
  *   DEPLOYER_PRIVATE_KEY — приватный ключ деплоера
  *   TOKEN_CAP            — максимальный supply (по умолчанию 1_000_000 * 1e18)
+ *   ETHERSCAN_API_KEY    — ключ для верификации
+ *
+ * Верификация:
+ *   forge script script/Upgrade.s.sol --network sepolia --broadcast --verify
  */
 contract UpgradeScript is Script {
     function run() external {
@@ -50,6 +54,13 @@ contract UpgradeScript is Script {
         console.log("Proxy upgraded. Version:", OlegTokenV2(proxyAddr).version());
 
         vm.stopBroadcast();
+
+        string memory etherscanKey = vm.envOr("ETHERSCAN_API_KEY", string(""));
+        if (bytes(etherscanKey).length == 0) {
+            console.log("");
+            console.log("--- Manual verification ---");
+            console.log("forge verify-contract <IMPL_V2> src/OlegTokenV2.sol:OlegTokenV2 --chain <CHAIN_ID>");
+        }
     }
 
     function _readProxyFromFile() internal returns (address) {

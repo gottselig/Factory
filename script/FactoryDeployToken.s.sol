@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.34;
 
 import "forge-std/Script.sol";
 import "../src/OlegToken.sol";
@@ -16,6 +16,11 @@ import "../src/TokenFactory.sol";
  *   TOKEN_NAME           — название нового токена (по умолчанию "CloneToken")
  *   TOKEN_SYMBOL         — символ нового токена (по умолчанию "CLN")
  *   TOKEN_ADMIN          — адрес admin нового токена (по умолчанию deployer)
+ *   ETHERSCAN_API_KEY    — ключ для верификации
+ *
+ * Верификация клонов:
+ *   Клоны EIP-1167 верифицируются автоматически через ссылку на implementation.
+ *   Используйте: forge verify-contract <CLONE> src/OlegToken.sol:OlegToken --chain <CHAIN_ID>
  */
 contract FactoryDeployTokenScript is Script {
     function run() external {
@@ -52,7 +57,7 @@ contract FactoryDeployTokenScript is Script {
         vm.stopBroadcast();
     }
 
-    function _readFromFile(string memory key) internal returns (address) {
+    function _readFromFile(string memory key) internal view returns (address) {
         try vm.readFile("deploy-out.json") returns (string memory json) {
             return vm.parseJsonAddress(json, string.concat(".", key));
         } catch {

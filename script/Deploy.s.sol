@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.34;
 
 import "forge-std/Script.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
@@ -15,9 +15,13 @@ import "../src/TokenFactory.sol";
  *   2. ERC1967Proxy → OlegToken (прокси-токен)
  *   3. TokenFactory (с адресом реализации)
  *
- * Переменные окружения (опционально):
+ * Переменные окружения:
  *   DEPLOYER_PRIVATE_KEY — приватный ключ деплоера (по умолчанию первый ключ anvil)
  *   TRUSTED_FORWARDER    — адрес ERC2771-форвардера (по умолчанию address(0))
+ *   ETHERSCAN_API_KEY    — ключ для верификации (если задан — логируются команды verify)
+ *
+ * Верификация (публичные сети):
+ *   forge script script/Deploy.s.sol --network sepolia --broadcast --verify
  */
 contract DeployScript is Script {
     function run() external {
@@ -25,12 +29,15 @@ contract DeployScript is Script {
             "DEPLOYER_PRIVATE_KEY",
             uint256(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80)
         );
-        address deployer = vm.addr(deployerKey);
+        address deployer  = vm.addr(deployerKey);
         address forwarder = vm.envOr("TRUSTED_FORWARDER", address(0));
+        string memory etherscanKey = vm.envOr("ETHERSCAN_API_KEY", string(""));
+        bool verify = bytes(etherscanKey).length > 0;
 
         console.log("=== Deploy OlegToken + TokenFactory ===");
-        console.log("Deployer :", deployer);
-        console.log("Forwarder:", forwarder);
+        console.log("Deployer  :", deployer);
+        console.log("Forwarder :", forwarder);
+        console.log("Verify    :", verify);
 
         vm.startBroadcast(deployerKey);
 
@@ -61,5 +68,14 @@ contract DeployScript is Script {
         );
         vm.writeFile("deploy-out.json", json);
         console.log("Addresses saved to deploy-out.json");
+
+        // Подсказки для ручной верификации (если ключ не задан или --verify не передан)
+        if (!verify) {
+            console.log("");
+            console.log("--- Manual verification (when ETHERSCAN_API_KEY is set) ---");
+            console.log("forge verify-contract <IMPL>    src/OlegToken.sol:OlegToken    --chain <CHAIN_ID>");
+            console.log("forge verify-contract <FACTORY> src/TokenFactory.sol:TokenFactory --chain <CHAIN_ID>");
+            console.log("forge verify-contract <PROXY>   @openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy --chain <CHAIN_ID> --constructor-args $(cast abi-encode 'constructor(address,bytes)' <IMPL> <INITDATA>)");
+        }
     }
 }

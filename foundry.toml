@@ -2,12 +2,21 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-solc = "0.8.28"
+solc = "0.8.34"
 fs_permissions = [{ access = "read-write", path = "./" }]
 dotenv = ".env"
 remappings = [
     "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
     "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
 ]
+
+[rpc_endpoints]
+anvil   = "http://127.0.0.1:8545"
+sepolia = "${RPC_URL}"
+mainnet = "${RPC_URL}"
+
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.etherscan.io/api" }
+mainnet = { key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/api" }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
