@@ -13,8 +13,6 @@ import "../src/TokenFactory.sol";
  */
 contract OlegTokenTest is Test {
     // -------------------------------------------------------------------------
-    // Участники тестов
-    // -------------------------------------------------------------------------
     address internal admin   = makeAddr("admin");
     address internal minter  = makeAddr("minter");
     address internal burner  = makeAddr("burner");
